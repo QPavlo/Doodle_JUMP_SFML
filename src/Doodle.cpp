@@ -1,17 +1,20 @@
 #include "../headers/Doodle.hpp"
 
-Doodle::Doodle(sf::Vector2f size) : doodleSize{size} {}
+Doodle::Doodle(std::string_view texture_filename) {
+    this->doodleTexture.loadFromFile(texture_filename.data());
+    this->doodleSprite.setTexture(doodleTexture);
+}
 
 void Doodle::setPosition(sf::Vector2f newPosition) {
     this->doodlePosition = newPosition;
 }
 
-void Doodle::setSpeed(float speed) {
-    this->doodleSpeed = speed;
+void Doodle::applyCurrentPosition() {
+    doodleSprite.setPosition(doodlePosition);
 }
 
-void Doodle::setSize(sf::Vector2f size) {
-    this->doodleSize = size;
+void Doodle::setSpeed(float speed) {
+    this->doodleSpeed = speed;
 }
 
 void Doodle::setX(float x) {
@@ -55,9 +58,25 @@ void Doodle::changeDy(float d_accelerationY) {
 }
 
 [[nodiscard]] sf::Vector2f Doodle::getSize() const {
-    return doodleSize;
+    return static_cast<sf::Vector2f>(doodleTexture.getSize());
 }
 
 [[nodiscard]] float Doodle::getSpeed() const {
     return doodleSpeed;
+}
+
+[[nodiscard]] const sf::Texture &Doodle::getTexture() const {
+    return doodleTexture;
+}
+
+[[nodiscard]] sf::Texture &Doodle::getTexture() {
+    return doodleTexture;
+}
+
+[[nodiscard]] sf::Sprite &Doodle::getSprite() {
+    return doodleSprite;
+}
+
+[[nodiscard]] const sf::Sprite &Doodle::getSprite() const {
+    return doodleSprite;
 }

@@ -74,16 +74,13 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
     float height = static_cast<float>(window.getSize().y);
     uint32_t score = 0;
 
-    sf::Texture doodle, platform, movable_platform, background, monster;
+    sf::Texture platform, movable_platform, background, monster;
 
-    doodle.loadFromFile("../img/doodle.png");
     platform.loadFromFile("../img/platform.png");
     movable_platform.loadFromFile("../img/movable_platform.png");
     background.loadFromFile("../img/background.png");
-    monster.loadFromFile("../img/monster.png");
 
-    sf::Sprite spriteDoodle{doodle},
-            spritePlatform{platform},
+    sf::Sprite spritePlatform{platform},
             spriteM_Platform{movable_platform},
             spriteBackground{background},
             spriteMonster{monster};
@@ -96,8 +93,8 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
     std::array<StaticPlatform, 10> platforms{};
     std::array<MovablePlatform, 4> movable_platforms{};
 
-    Doodle doodle_params{static_cast<sf::Vector2f>(doodle.getSize())};
-    Obstacle monster_params{monster_scale * static_cast<sf::Vector2f>(monster.getSize())};
+    Doodle doodle{"../img/doodle.png"};
+    Obstacle monster_params{"../img/monster.png"};
     MovablePlatform::setSize(static_cast<sf::Vector2f>(platform.getSize()));
 
     std::random_device rd;
@@ -137,32 +134,32 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)
             or sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-            doodle_params.changeX(5);
+            doodle.changeX(5);
 
-            if (doodle_params.getX() > width) {
-                doodle_params.setX(negative(doodle_params.getPosition().x));
+            if (doodle.getX() > width) {
+                doodle.setX(negative(doodle.getPosition().x));
             }
         }
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)
             or sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-            doodle_params.changeX(-5);
+            doodle.changeX(-5);
 
-            if (doodle_params.getX() + doodle_params.getSize().x < 0) {
-                doodle_params.setX(width);
+            if (doodle.getX() + doodle.getSize().x < 0) {
+                doodle.setX(width);
             }
         }
 
-        doodle_params.changeDy(0.25f);
-        doodle_params.changeY(doodle_params.getDy());
+        doodle.changeDy(0.25f);
+        doodle.changeY(doodle.getDy());
 
-        if (doodle_params.getY() > height - 33) {
+        if (doodle.getY() > height - 33) {
             lose_game_window(window);
         }
 
-        if (doodle_params.getY() < h) {
-            score += static_cast<uint32_t>(doodle_params.getY() / 100);
-            doodle_params.setY(h);
+        if (doodle.getY() < h) {
+            score += static_cast<uint32_t>(doodle.getY() / 100);
+            doodle.setY(h);
 
             std::for_each_n(platforms.begin(), platforms.size() - less_platforms,
                             [&, i = 0](auto &plat) mutable {
@@ -177,18 +174,18 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
                                         plat.setX(distribution_x(mt));
                                     }
                                 } else {
-                                    plat.changeY(-doodle_params.getDy());
+                                    plat.changeY(-doodle.getDy());
                                 }
                                 i += 1;
                             });
 
-            if (score > 10) {
+            if (score > 1000) {
                 for (auto &m_plat: movable_platforms) {
                     if (m_plat.getY() > height) {
                         m_plat.setY(negative(small_distribution_y(mt)));
                         m_plat.setX(distribution_x(mt));
                     } else {
-                        m_plat.changeY(-doodle_params.getDy());
+                        m_plat.changeY(-doodle.getDy());
                     }
                 }
 
@@ -196,12 +193,8 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
                     if (monster_params.getY() > height) {
                         monster_params.setX(distribution_x(mt));
                         monster_params.setY(negative(static_cast<float>(monster.getSize().y)));
-
-//                        spriteMonster.setPosition(distribution_x(mt),
-//                                                  negative(static_cast<float>(monster.getSize().y)));
                     } else {
-                        monster_params.setY(monster_params.getY() - doodle_params.getDy());
-//                        spriteMonster.setPosition(spriteMonster.getPosition().x, spriteMonster.getPosition().y - dy);
+                        monster_params.setY(monster_params.getY() - doodle.getDy());
                     }
 
                     if (monster_params.getY() > height) {
@@ -212,33 +205,34 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
         }
 
         std::for_each_n(platforms.begin(), platforms.size() - less_platforms, [&](const auto &plat) {
-            if (platform_collision_detection(doodle_params, plat)) {
-                if (doodle_params.getDy() > 0) {
-                    doodle_params.setDy(-10);
+            if (platform_collision_detection(doodle, plat)) {
+                if (doodle.getDy() > 0) {
+                    doodle.setDy(-10);
                 }
             }
         });
 
-        spriteDoodle.setPosition(doodle_params.getX(), doodle_params.getY());
         window.draw(spriteBackground);
-        window.draw(spriteDoodle);
+
+        doodle.applyCurrentPosition();
+        window.draw(doodle.getSprite());
 
         std::for_each_n(platforms.begin(), platforms.size() - less_platforms, [&](auto &plat) {
             spritePlatform.setPosition(plat.getX(), plat.getY());
             window.draw(spritePlatform);
         });
 
-        if (score > 10) {
+        if (score > 1000) {
             for (const auto &m_plat: movable_platforms) {
-                if (platform_collision_detection(doodle_params, m_plat)) {
-                    if (doodle_params.getDy() > 0) {
-                        doodle_params.setDy(-10);
+                if (platform_collision_detection(doodle, m_plat)) {
+                    if (doodle.getDy() > 0) {
+                        doodle.setDy(-10);
                     }
                 }
             }
 
             if (score % 100 == 0) {
-                dx += 0.03;
+                dx += 0.02;
             }
 
             for (auto &m_plat: movable_platforms) {
@@ -253,7 +247,6 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
                 window.draw(spriteM_Platform);
             }
 
-
             float temp_rand = distribution_x(mt);
 
             if (temp_rand >= 234.92 and temp_rand <= 245 and !monster_flag) {
@@ -262,23 +255,23 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
 
             if (monster_flag) {
 //                monster_params.setPosition(spriteMonster.getPosition());
-                auto monster_coll_det = monster_collision_detection(doodle_params,
+                auto monster_coll_det = monster_collision_detection(doodle,
                                                                     monster_params);
 
                 if (monster_coll_det == MonsterCollision::COLLISION_FROM_BOTTOM) {
-                    std::getchar();
                     lose_game_window(window);
                 } else if (monster_coll_det == MonsterCollision::COLLISION_FROM_TOP) {
-                    if (doodle_params.getDy() >= 0) {
-                        doodle_params.setDy(-10);
+                    if (doodle.getDy() >= 0) {
+                        doodle.setDy(-10);
                     } else {
-                        doodle_params.setDy(-6.5);
+                        doodle.setDy(-6.5);
                     }
                     monster_params.setPosition({1000, 1000});
-
                 }
-                spriteMonster.setPosition(monster_params.getPosition());
-                window.draw(spriteMonster);
+//                spriteMonster.setPosition(monster_params.getPosition());
+
+                monster_params.getSprite().setPosition(monster_params.getPosition());
+                window.draw(monster_params.getSprite());
             }
         }
 

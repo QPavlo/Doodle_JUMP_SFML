@@ -5,13 +5,13 @@
 
 class Doodle {
 public:
-    explicit Doodle(sf::Vector2f size);
+    explicit Doodle(std::string_view texture_filename);
 
     void setPosition(sf::Vector2f newPosition);
 
-    void setSpeed(float speed);
+    void applyCurrentPosition();
 
-    void setSize(sf::Vector2f size);
+    void setSpeed(float speed);
 
     void setX(float x);
 
@@ -27,7 +27,6 @@ public:
 
     [[nodiscard]] float getX() const;
 
-
     [[nodiscard]] float getY() const;
 
     [[nodiscard]] float getDy() const;
@@ -36,11 +35,20 @@ public:
 
     [[nodiscard]] sf::Vector2f getSize() const;
 
+    [[nodiscard]] const sf::Texture &getTexture() const;
+
+    [[nodiscard]] sf::Texture &getTexture();
+
+    [[nodiscard]] sf::Sprite &getSprite();
+
+    [[nodiscard]] const sf::Sprite &getSprite() const;
+
     [[nodiscard]] float getSpeed() const;
 
 private:
     sf::Vector2f doodlePosition{};
-    sf::Vector2f doodleSize{};
+    sf::Texture doodleTexture{};
+    sf::Sprite doodleSprite{};
     float doodleSpeed{0};
     float doodleY_Acceleration{0};
 };

@@ -5,7 +5,10 @@
 
 class Obstacle {
 public:
-    explicit Obstacle(sf::Vector2f size) : obstaclePosition{}, obstacleSize{size} {}
+    explicit Obstacle(std::string_view textureFilename) {
+        obstacleTexture.loadFromFile(textureFilename.data());
+        obstacleSprite.setTexture(obstacleTexture);
+    }
 
     void setPosition(sf::Vector2f newPosition) {
         this->obstaclePosition = newPosition;
@@ -17,10 +20,6 @@ public:
 
     void setY(float y) {
         this->obstaclePosition.y = y;
-    }
-
-    void setSize(sf::Vector2f size) {
-        this->obstacleSize = size;
     }
 
     [[nodiscard]] sf::Vector2f getPosition() const {
@@ -36,12 +35,21 @@ public:
     }
 
     [[nodiscard]] sf::Vector2f getSize() const {
-        return obstacleSize;
+        return static_cast<sf::Vector2f>(obstacleTexture.getSize());
+    }
+
+    [[nodiscard]] const sf::Sprite &getSprite() const {
+        return obstacleSprite;
+    }
+
+    [[nodiscard]]  sf::Sprite &getSprite() {
+        return obstacleSprite;
     }
 
 private:
+    sf::Texture obstacleTexture{};
+    sf::Sprite obstacleSprite{};
     sf::Vector2f obstaclePosition{};
-    sf::Vector2f obstacleSize{};
 };
 
 

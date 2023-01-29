@@ -11,6 +11,14 @@ public:
         this->obstacleCoordinates = coordinates;
     }
 
+    void setX(float x) {
+        this->obstacleCoordinates.x = x;
+    }
+
+    void setY(float y) {
+        this->obstacleCoordinates.y = y;
+    }
+
     void setSize(sf::Vector2f size) {
         this->obstacleSize = size;
     }

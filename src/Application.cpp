@@ -14,23 +14,29 @@ template<typename T>
     return -num;
 }
 
+enum MonsterCollision : uint32_t {
+    NO_COLLISION = 0,
+    COLLISION_FROM_BOTTOM = 1,
+    COLLISION_FROM_TOP = 2
+};
+
 [[nodiscard]] int32_t monster_collision_detection(const Doodle &doodle,
                                                   const Obstacle &monster) {
 
     if (((doodle.getX() + (doodle.getSize().x / 1.5f) > monster.getX()) and
-         (doodle.getX() + (doodle.getSize().x / 3.0f) < monster.getX() + BasePlatform::getSize().x) and
+         (doodle.getX() + (doodle.getSize().x / 3.0f) < monster.getX() + monster.getSize().x) and
          (doodle.getY() + doodle.getSize().y > monster.getY()) and
-         (doodle.getY() + doodle.getSize().y < monster.getY() + BasePlatform::getSize().y))) {
-        return 2;
+         (doodle.getY() + doodle.getSize().y < monster.getY() + 0.2f * monster.getSize().y))) {
+        return MonsterCollision::COLLISION_FROM_TOP;
     }
 
     if ((doodle.getX() + (doodle.getSize().x / 1.5f) > monster.getX()) and
         (doodle.getX() + (doodle.getSize().x / 3.0f) < monster.getX() + monster.getSize().x) and
-        (doodle.getY() + doodle.getSize().y - 30 > monster.getY()) and
-        (doodle.getY() < monster.getY() + monster.getSize().y - 30)) {
-        return 1;
+        (doodle.getY() + doodle.getSize().y - 45 > monster.getY()) and
+        (doodle.getY() < monster.getY() + monster.getSize().y - 45)) {
+        return MonsterCollision::COLLISION_FROM_BOTTOM;
     }
-    return 0;
+    return MonsterCollision::NO_COLLISION;
 }
 
 [[nodiscard]] bool platform_collision_detection(const Doodle &doodle,
@@ -110,12 +116,10 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
         m_plat.setCoordinates(distribution_x(mt), negative(distribution_y(mt)));
     }
 
-
-    monster_params.setCoordinates({distribution_x(mt), negative(distribution_y(mt))});
+    monster_params.setPosition({distribution_x(mt), negative(distribution_y(mt))});
 
     float h = 250;
-
-    float dy = 0.0f, dx = 3.0f;
+    float dx = 3.0f;
     bool monster_flag = false;
     int32_t less_platforms = 0;
 
@@ -136,7 +140,7 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
             doodle_params.changeX(5);
 
             if (doodle_params.getX() > width) {
-                doodle_params.setX(negative(doodle_params.getCoordinates().x));
+                doodle_params.setX(negative(doodle_params.getPosition().x));
             }
         }
 
@@ -144,16 +148,13 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
             or sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
             doodle_params.changeX(-5);
 
-            if (doodle_params.getX()
-                + doodle_params.getSize().x < 0) {
+            if (doodle_params.getX() + doodle_params.getSize().x < 0) {
                 doodle_params.setX(width);
             }
         }
 
-        dy += 0.25f;
-//        y += dy;
-
-        doodle_params.changeY(dy);
+        doodle_params.changeDy(0.25f);
+        doodle_params.changeY(doodle_params.getDy());
 
         if (doodle_params.getY() > height - 33) {
             lose_game_window(window);
@@ -176,7 +177,7 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
                                         plat.setX(distribution_x(mt));
                                     }
                                 } else {
-                                    plat.changeY(-dy);
+                                    plat.changeY(-doodle_params.getDy());
                                 }
                                 i += 1;
                             });
@@ -187,7 +188,7 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
                         m_plat.setY(negative(small_distribution_y(mt)));
                         m_plat.setX(distribution_x(mt));
                     } else {
-                        m_plat.changeY(-dy);
+                        m_plat.changeY(-doodle_params.getDy());
                     }
                 }
 
@@ -199,7 +200,7 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
 //                        spriteMonster.setPosition(distribution_x(mt),
 //                                                  negative(static_cast<float>(monster.getSize().y)));
                     } else {
-                        monster_params.setY(monster_params.getY() - dy);
+                        monster_params.setY(monster_params.getY() - doodle_params.getDy());
 //                        spriteMonster.setPosition(spriteMonster.getPosition().x, spriteMonster.getPosition().y - dy);
                     }
 
@@ -212,8 +213,8 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
 
         std::for_each_n(platforms.begin(), platforms.size() - less_platforms, [&](const auto &plat) {
             if (platform_collision_detection(doodle_params, plat)) {
-                if (dy > 0) {
-                    dy = -10;
+                if (doodle_params.getDy() > 0) {
+                    doodle_params.setDy(-10);
                 }
             }
         });
@@ -230,8 +231,8 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
         if (score > 10) {
             for (const auto &m_plat: movable_platforms) {
                 if (platform_collision_detection(doodle_params, m_plat)) {
-                    if (dy > 0) {
-                        dy = -10;
+                    if (doodle_params.getDy() > 0) {
+                        doodle_params.setDy(-10);
                     }
                 }
             }
@@ -252,26 +253,31 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
                 window.draw(spriteM_Platform);
             }
 
+
             float temp_rand = distribution_x(mt);
 
-            if (temp_rand >= 244.92 and temp_rand <= 245 and !monster_flag) {
+            if (temp_rand >= 234.92 and temp_rand <= 245 and !monster_flag) {
                 monster_flag = true;
             }
 
             if (monster_flag) {
-//                monster_params.setCoordinates(spriteMonster.getPosition());
+//                monster_params.setPosition(spriteMonster.getPosition());
                 auto monster_coll_det = monster_collision_detection(doodle_params,
                                                                     monster_params);
-                if (monster_coll_det == 1) {
+
+                if (monster_coll_det == MonsterCollision::COLLISION_FROM_BOTTOM) {
+                    std::getchar();
                     lose_game_window(window);
-                } else if (monster_coll_det == 2) {
-                    if (dy > 0) {
-                        dy = -10;
+                } else if (monster_coll_det == MonsterCollision::COLLISION_FROM_TOP) {
+                    if (doodle_params.getDy() >= 0) {
+                        doodle_params.setDy(-10);
+                    } else {
+                        doodle_params.setDy(-6.5);
                     }
-                    monster_params.setCoordinates({1000, 1000});
+                    monster_params.setPosition({1000, 1000});
 
                 }
-                spriteMonster.setPosition(monster_params.getCoordinates());
+                spriteMonster.setPosition(monster_params.getPosition());
                 window.draw(spriteMonster);
             }
         }

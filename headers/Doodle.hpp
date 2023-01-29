@@ -5,62 +5,44 @@
 
 class Doodle {
 public:
-    explicit Doodle(sf::Vector2f size) : doodleSize{size} {}
+    explicit Doodle(sf::Vector2f size);
 
-    void setCoordinates(sf::Vector2f coordinates) {
-        this->doodleCoordinates = coordinates;
-    }
+    void setPosition(sf::Vector2f newPosition);
 
-    void setSpeed(float speed) {
-        this->doodleSpeed = speed;
-    }
+    void setSpeed(float speed);
 
-    void setSize(sf::Vector2f size) {
-        this->doodleSize = size;
-    }
+    void setSize(sf::Vector2f size);
 
-    void setX(float x) {
-        doodleCoordinates.x = x;
-    }
+    void setX(float x);
 
-    void setY(float y) {
-        doodleCoordinates.y = y;
-    }
+    void setDy(float accelerationY);
 
-    void changeX(float dx) {
-        doodleCoordinates.x += dx;
-    }
+    void setY(float y);
 
-    void changeY(float dy) {
-        doodleCoordinates.y += dy;
-    }
+    void changeX(float dx);
 
-    [[nodiscard]] float getX() const {
-        return doodleCoordinates.x;
-    }
+    void changeY(float dy);
 
-    [[nodiscard]] float getY() const {
-        return doodleCoordinates.y;
-    }
+    void changeDy(float d_accelerationY);
+
+    [[nodiscard]] float getX() const;
 
 
-    [[nodiscard]] sf::Vector2f getCoordinates() const {
-        return doodleCoordinates;
-    }
+    [[nodiscard]] float getY() const;
 
-    [[nodiscard]] sf::Vector2f getSize() const {
-        return doodleSize;
-    }
+    [[nodiscard]] float getDy() const;
 
-    [[nodiscard]] float getSpeed() const {
-        return doodleSpeed;
-    }
+    [[nodiscard]] sf::Vector2f getPosition() const;
+
+    [[nodiscard]] sf::Vector2f getSize() const;
+
+    [[nodiscard]] float getSpeed() const;
 
 private:
-    sf::Vector2f doodleCoordinates{};
+    sf::Vector2f doodlePosition{};
     sf::Vector2f doodleSize{};
-    float doodleSpeed{};
-    float doodleDY{};
+    float doodleSpeed{0};
+    float doodleY_Acceleration{0};
 };
 
 #endif //SFML_TEST_DOODLE_HPP

@@ -5,26 +5,34 @@
 
 class Obstacle {
 public:
-    explicit Obstacle(sf::Vector2f size) : obstacleCoordinates{}, obstacleSize{size} {}
+    explicit Obstacle(sf::Vector2f size) : obstaclePosition{}, obstacleSize{size} {}
 
-    void setCoordinates(sf::Vector2f coordinates) {
-        this->obstacleCoordinates = coordinates;
+    void setPosition(sf::Vector2f newPosition) {
+        this->obstaclePosition = newPosition;
+    }
+
+    void setX(float x) {
+        this->obstaclePosition.x = x;
+    }
+
+    void setY(float y) {
+        this->obstaclePosition.y = y;
     }
 
     void setSize(sf::Vector2f size) {
         this->obstacleSize = size;
     }
 
-    [[nodiscard]] sf::Vector2f getCoordinates() const {
-        return obstacleCoordinates;
+    [[nodiscard]] sf::Vector2f getPosition() const {
+        return obstaclePosition;
     }
 
     [[nodiscard]] float getX() const {
-        return obstacleCoordinates.x;
+        return obstaclePosition.x;
     }
 
     [[nodiscard]] float getY() const {
-        return obstacleCoordinates.y;
+        return obstaclePosition.y;
     }
 
     [[nodiscard]] sf::Vector2f getSize() const {
@@ -32,7 +40,7 @@ public:
     }
 
 private:
-    sf::Vector2f obstacleCoordinates{};
+    sf::Vector2f obstaclePosition{};
     sf::Vector2f obstacleSize{};
 };
 

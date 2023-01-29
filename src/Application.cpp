@@ -14,15 +14,23 @@ template<typename T>
     return -num;
 }
 
-[[nodiscard]] bool obstacle_collision_detection(const Doodle &doodle,
-                                                const Obstacle &obstacle) {
-    if ((doodle.getX() + (doodle.getSize().x / 1.5f) > obstacle.getX()) and
-        (doodle.getX() + (doodle.getSize().x / 3.0f) < obstacle.getX() + obstacle.getSize().x) and
-        (doodle.getY() + doodle.getSize().y - 30 > obstacle.getY()) and
-        (doodle.getY() < obstacle.getY() + obstacle.getSize().y - 30)) {
-        return true;
+[[nodiscard]] int32_t monster_collision_detection(const Doodle &doodle,
+                                                  const Obstacle &monster) {
+
+    if (((doodle.getX() + (doodle.getSize().x / 1.5f) > monster.getX()) and
+         (doodle.getX() + (doodle.getSize().x / 3.0f) < monster.getX() + BasePlatform::getSize().x) and
+         (doodle.getY() + doodle.getSize().y > monster.getY()) and
+         (doodle.getY() + doodle.getSize().y < monster.getY() + BasePlatform::getSize().y))) {
+        return 2;
     }
-    return false;
+
+    if ((doodle.getX() + (doodle.getSize().x / 1.5f) > monster.getX()) and
+        (doodle.getX() + (doodle.getSize().x / 3.0f) < monster.getX() + monster.getSize().x) and
+        (doodle.getY() + doodle.getSize().y - 30 > monster.getY()) and
+        (doodle.getY() < monster.getY() + monster.getSize().y - 30)) {
+        return 1;
+    }
+    return 0;
 }
 
 [[nodiscard]] bool platform_collision_detection(const Doodle &doodle,
@@ -246,18 +254,23 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
 
             float temp_rand = distribution_x(mt);
 
-            if (temp_rand >= 234.92 and temp_rand <= 245 and !monster_flag) {
+            if (temp_rand >= 244.92 and temp_rand <= 245 and !monster_flag) {
                 monster_flag = true;
             }
 
             if (monster_flag) {
 //                monster_params.setCoordinates(spriteMonster.getPosition());
-
-                if (obstacle_collision_detection(doodle_params,
-                                                 monster_params)) {
+                auto monster_coll_det = monster_collision_detection(doodle_params,
+                                                                    monster_params);
+                if (monster_coll_det == 1) {
                     lose_game_window(window);
-                }
+                } else if (monster_coll_det == 2) {
+                    if (dy > 0) {
+                        dy = -10;
+                    }
+                    monster_params.setCoordinates({1000, 1000});
 
+                }
                 spriteMonster.setPosition(monster_params.getCoordinates());
                 window.draw(spriteMonster);
             }

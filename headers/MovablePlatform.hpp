@@ -18,7 +18,7 @@ public:
     }
 
 private:
-    float movablePlatformSpeed{};
+    float movablePlatformSpeed{0};
 };
 
 #endif //SFML_TEST_MOVABLE_PLATFORM_HPP

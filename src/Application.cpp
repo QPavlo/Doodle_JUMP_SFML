@@ -3,6 +3,7 @@
 #include "../headers/MovablePlatform.hpp"
 #include "../headers/Doodle.hpp"
 #include "../headers/Obstacle.hpp"
+#include "../headers/Platforms.hpp"
 
 #include <SFML/Graphics.hpp>
 #include <iostream>
@@ -50,6 +51,8 @@ enum MonsterCollision : uint32_t {
     return false;
 }
 
+void play_game(sf::RenderWindow &window, const sf::Font &font);
+
 void lose_game_window(sf::RenderWindow &window) {
     sf::Texture lose_screen;
     lose_screen.loadFromFile("../img/lose_screen.png");
@@ -61,6 +64,10 @@ void lose_game_window(sf::RenderWindow &window) {
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 window.close();
+            } else if (event.type == sf::Event::KeyPressed) {
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
+                    play_game(window, sf::Font());
+                }
             }
         }
         window.clear();
@@ -74,7 +81,7 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
     float height = static_cast<float>(window.getSize().y);
     uint32_t score = 0;
 
-    sf::Texture platform, movable_platform, background, monster;
+    sf::Texture platform, movable_platform, background;
 
     platform.loadFromFile("../img/platform.png");
     movable_platform.loadFromFile("../img/movable_platform.png");
@@ -82,19 +89,14 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
 
     sf::Sprite spritePlatform{platform},
             spriteM_Platform{movable_platform},
-            spriteBackground{background},
-            spriteMonster{monster};
+            spriteBackground{background};
 
-
-    float monster_scale = 0.4f;
-
-    spriteMonster.scale(monster_scale, monster_scale);
 
     std::array<StaticPlatform, 10> platforms{};
-    std::array<MovablePlatform, 4> movable_platforms{};
+    std::array<MovablePlatform, 5> movable_platforms{};
 
     Doodle doodle{"../img/doodle.png"};
-    Obstacle monster_params{"../img/monster.png"};
+    Obstacle monster{"../img/monster.png"};
     MovablePlatform::setSize(static_cast<sf::Vector2f>(platform.getSize()));
 
     std::random_device rd;
@@ -103,6 +105,8 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
     std::uniform_real_distribution<float> distribution_x(0, width - MovablePlatform::getSize().x);
     std::uniform_real_distribution<float> distribution_y(0, height);
     std::uniform_real_distribution<float> small_distribution_y(0, height / 10);
+
+    Platforms<StaticPlatform, 10> platforms1{"../img/platform.png", distribution_x, distribution_y, mt};
 
     for (auto &plat: platforms) {
         plat.setX(distribution_x(mt));
@@ -113,7 +117,7 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
         m_plat.setCoordinates(distribution_x(mt), negative(distribution_y(mt)));
     }
 
-    monster_params.setPosition({distribution_x(mt), negative(distribution_y(mt))});
+    monster.setPosition({distribution_x(mt), negative(distribution_y(mt))});
 
     float h = 250;
     float dx = 3.0f;
@@ -164,10 +168,11 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
             std::for_each_n(platforms.begin(), platforms.size() - less_platforms,
                             [&, i = 0](auto &plat) mutable {
                                 if (plat.getY() > height) {
-                                    if (less_platforms < 5
+                                    if (less_platforms < 7
                                         and i == platforms.size() - less_platforms - 1
                                         and score > 800 * (less_platforms + 1)
                                             ) {
+                                        std::cout << "less pl\n";
                                         less_platforms += 1;
                                     } else {
                                         plat.setY(0);
@@ -190,14 +195,14 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
                 }
 
                 if (monster_flag) {
-                    if (monster_params.getY() > height) {
-                        monster_params.setX(distribution_x(mt));
-                        monster_params.setY(negative(static_cast<float>(monster.getSize().y)));
+                    if (monster.getY() > height) {
+                        monster.setX(distribution_x(mt));
+                        monster.setY(negative(monster.getSize().y));
                     } else {
-                        monster_params.setY(monster_params.getY() - doodle.getDy());
+                        monster.setY(monster.getY() - doodle.getDy());
                     }
 
-                    if (monster_params.getY() > height) {
+                    if (monster.getY() > height) {
                         monster_flag = false;
                     }
                 }
@@ -249,29 +254,25 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
 
             float temp_rand = distribution_x(mt);
 
-            if (temp_rand >= 234.92 and temp_rand <= 245 and !monster_flag) {
+            if (temp_rand >= 244.92 and temp_rand <= 245 and !monster_flag) {
                 monster_flag = true;
             }
 
             if (monster_flag) {
-//                monster_params.setPosition(spriteMonster.getPosition());
+//                monster.setPosition(spriteMonster.getPosition());
                 auto monster_coll_det = monster_collision_detection(doodle,
-                                                                    monster_params);
+                                                                    monster);
 
                 if (monster_coll_det == MonsterCollision::COLLISION_FROM_BOTTOM) {
                     lose_game_window(window);
                 } else if (monster_coll_det == MonsterCollision::COLLISION_FROM_TOP) {
-                    if (doodle.getDy() >= 0) {
-                        doodle.setDy(-10);
-                    } else {
-                        doodle.setDy(-6.5);
-                    }
-                    monster_params.setPosition({1000, 1000});
+                    doodle.setDy(-10);
+                    monster.setPosition({1000, 1000});
                 }
-//                spriteMonster.setPosition(monster_params.getPosition());
+//                spriteMonster.setPosition(monster.getPosition());
 
-                monster_params.getSprite().setPosition(monster_params.getPosition());
-                window.draw(monster_params.getSprite());
+                monster.getSprite().setPosition(monster.getPosition());
+                window.draw(monster.getSprite());
             }
         }
 

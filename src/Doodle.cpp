@@ -1,7 +1,7 @@
 #include "../headers/Doodle.hpp"
 
-Doodle::Doodle(std::string_view texture_filename) {
-    this->doodleTexture.loadFromFile(texture_filename.data());
+Doodle::Doodle(std::string_view textureFilename) {
+    this->doodleTexture.loadFromFile(textureFilename.data());
     this->doodleSprite.setTexture(doodleTexture);
 }
 

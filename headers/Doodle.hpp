@@ -5,7 +5,7 @@
 
 class Doodle {
 public:
-    explicit Doodle(std::string_view texture_filename);
+    explicit Doodle(std::string_view textureFilename);
 
     void setPosition(sf::Vector2f newPosition);
 

@@ -1,10 +1,10 @@
 #ifndef SFML_TEST_MOVABLE_PLATFORM_HPP
 #define SFML_TEST_MOVABLE_PLATFORM_HPP
 
-#include "BasePlatform.hpp"
+#include "StaticPlatform.hpp"
 #include <SFML/Graphics.hpp>
 
-class MovablePlatform : public BasePlatform {
+class MovablePlatform : public StaticPlatform {
 
 public:
     MovablePlatform() = default;

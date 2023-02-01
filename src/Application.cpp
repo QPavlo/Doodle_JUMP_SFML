@@ -41,11 +41,11 @@ enum MonsterCollision : uint32_t {
 }
 
 [[nodiscard]] bool platform_collision_detection(const Doodle &doodle,
-                                                const BasePlatform &platform) {
+                                                const StaticPlatform &platform) {
     if ((doodle.getX() + (doodle.getSize().x / 1.5f) > platform.getX()) and
-        (doodle.getX() + (doodle.getSize().x / 3.0f) < platform.getX() + BasePlatform::getSize().x) and
+        (doodle.getX() + (doodle.getSize().x / 3.0f) < platform.getX() + StaticPlatform::getSize().x) and
         (doodle.getY() + doodle.getSize().y > platform.getY()) and
-        (doodle.getY() + doodle.getSize().y < platform.getY() + BasePlatform::getSize().y)) {
+        (doodle.getY() + doodle.getSize().y < platform.getY() + StaticPlatform::getSize().y)) {
         return true;
     }
     return false;
@@ -165,6 +165,10 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
             score += static_cast<uint32_t>(doodle.getY() / 100);
             doodle.setY(h);
 
+            platforms1.changePlatformPosition(height, doodle.getDy());
+            platforms1.changePlatformsAmount(height, doodle.getDy(), score);
+
+#pragma region
             std::for_each_n(platforms.begin(), platforms.size() - less_platforms,
                             [&, i = 0](auto &plat) mutable {
                                 if (plat.getY() > height) {
@@ -183,6 +187,7 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
                                 }
                                 i += 1;
                             });
+#pragma endregion
 
             if (score > 1000) {
                 for (auto &m_plat: movable_platforms) {

@@ -42,7 +42,7 @@ public:
         return obstacleSprite;
     }
 
-    [[nodiscard]]  sf::Sprite &getSprite() {
+    [[nodiscard]] sf::Sprite &getSprite() {
         return obstacleSprite;
     }
 

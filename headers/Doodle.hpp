@@ -9,8 +9,6 @@ public:
 
     void setPosition(sf::Vector2f newPosition);
 
-    void applyCurrentPosition();
-
     void setSpeed(float speed);
 
     void setX(float x);
@@ -46,7 +44,6 @@ public:
     [[nodiscard]] float getSpeed() const;
 
 private:
-    sf::Vector2f doodlePosition{};
     sf::Texture doodleTexture{};
     sf::Sprite doodleSprite{};
     float doodleSpeed{0};

@@ -1,4 +1,5 @@
 #include "../headers/Doodle.hpp"
+#include <iostream>
 
 Doodle::Doodle(std::string_view textureFilename) {
     this->doodleTexture.loadFromFile(textureFilename.data());
@@ -6,11 +7,7 @@ Doodle::Doodle(std::string_view textureFilename) {
 }
 
 void Doodle::setPosition(sf::Vector2f newPosition) {
-    this->doodlePosition = newPosition;
-}
-
-void Doodle::applyCurrentPosition() {
-    doodleSprite.setPosition(doodlePosition);
+    doodleSprite.setPosition(newPosition);
 }
 
 void Doodle::setSpeed(float speed) {
@@ -18,7 +15,7 @@ void Doodle::setSpeed(float speed) {
 }
 
 void Doodle::setX(float x) {
-    this->doodlePosition.x = x;
+    doodleSprite.setPosition(x, doodleSprite.getPosition().y);
 }
 
 void Doodle::setDy(float accelerationY) {
@@ -26,15 +23,15 @@ void Doodle::setDy(float accelerationY) {
 }
 
 void Doodle::setY(float y) {
-    doodlePosition.y = y;
+    doodleSprite.setPosition(doodleSprite.getPosition().x, y);
 }
 
 void Doodle::changeX(float dx) {
-    doodlePosition.x += dx;
+    doodleSprite.setPosition(doodleSprite.getPosition().x + dx, doodleSprite.getPosition().y);
 }
 
 void Doodle::changeY(float dy) {
-    doodlePosition.y += dy;
+    doodleSprite.setPosition(doodleSprite.getPosition().x, doodleSprite.getPosition().y + dy);
 }
 
 void Doodle::changeDy(float d_accelerationY) {
@@ -42,11 +39,11 @@ void Doodle::changeDy(float d_accelerationY) {
 }
 
 [[nodiscard]] float Doodle::getX() const {
-    return doodlePosition.x;
+    return doodleSprite.getPosition().x;
 }
 
 [[nodiscard]] float Doodle::getY() const {
-    return doodlePosition.y;
+    return doodleSprite.getPosition().y;
 }
 
 [[nodiscard]] float Doodle::getDy() const {
@@ -54,7 +51,7 @@ void Doodle::changeDy(float d_accelerationY) {
 }
 
 [[nodiscard]] sf::Vector2f Doodle::getPosition() const {
-    return doodlePosition;
+    return doodleSprite.getPosition();
 }
 
 [[nodiscard]] sf::Vector2f Doodle::getSize() const {

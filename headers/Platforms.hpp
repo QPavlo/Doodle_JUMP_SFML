@@ -11,7 +11,6 @@
 template<typename T, size_t count>
 class Platforms {
 public:
-
     static_assert(std::is_base_of<StaticPlatform, T>::value, "T::value_type is not derived from BasePlatform");
 
     Platforms(std::string_view textureFilename,
@@ -29,37 +28,34 @@ public:
 
     void changePlatformPosition(float height, float doodleDy) {
         std::for_each_n(platforms.begin(), actualPlatformAmount,
-                        [&, i = 0](auto &plat) mutable {
+                        [&](auto &plat) mutable {
                             if (plat.getY() > height) {
                                 plat.setY(0);
                                 plat.setX(distribution_x(mt));
                             } else {
                                 plat.changeY(-doodleDy);
                             }
-                            i += 1;
                         });
 
     }
 
-    virtual void changePlatformsAmount(float height, float doodleDy, uint32_t score) {
-        std::for_each_n(platforms.begin(), actualPlatformAmount,
-                        [&, i = 0](auto &plat) mutable {
-                            if (plat.getY() > height) {
-                                if (actualPlatformAmount >= 7
-                                    and i == actualPlatformAmount - 1
-                                    and score > 800 * (platforms.size() - actualPlatformAmount + 1)
-                                        ) {
-                                    std::cout << "less pl\n";
-                                    actualPlatformAmount -= 1;
-                                } else {
-                                    plat.setY(0);
-                                    plat.setX(distribution_x(mt));
-                                }
-                            } else {
-                                plat.changeY(doodleDy);
-                            }
-                            i += 1;
-                        });
+    virtual void changePlatformsAmount(float height, uint32_t score) = 0;
+
+    void checkDoodleCollision(Doodle &doodle) {
+        std::for_each_n(platforms.begin(), actualPlatformAmount, [&](const auto &plat) {
+            if (platform_collision_detection(doodle, plat)) {
+                if (doodle.getDy() > 0) {
+                    doodle.setDy(-10);
+                }
+            }
+        });
+    }
+
+    void drawPlatforms(sf::RenderWindow &window) {
+        std::for_each_n(platforms.begin(), actualPlatformAmount, [&](auto &plat) {
+            platformSprite.setPosition(plat.getX(), plat.getY());
+            window.draw(platformSprite);
+        });
     }
 
     [[nodiscard]] constexpr std::array<T, count> &getPlatform() const {
@@ -78,63 +74,6 @@ protected:
     std::uniform_real_distribution<float> &distribution_x;
     std::uniform_real_distribution<float> &distribution_y;
     std::mt19937 &mt;
-};
-
-
-template<size_t count>
-class StaticPlatforms : public Platforms<StaticPlatform, count> {
-public:
-    void changePlatformsAmount(float height, float doodleDy, uint32_t score) {
-        std::for_each_n(this->platforms.begin(), this->actualPlatformAmount,
-                        [&, i = 0](auto &plat) mutable {
-                            if (plat.getY() > height) {
-                                if (this->actualPlatformAmount >= 7
-                                    and i == this->actualPlatformAmount - 1
-                                    and score > 800 * (this->platforms.size() - this->actualPlatformAmount + 1)
-                                        ) {
-                                    std::cout << "less pl\n";
-                                    this->actualPlatformAmount -= 1;
-                                } else {
-                                    plat.setY(0);
-                                    plat.setX(distribution_x(this->mt));
-                                }
-                            } else {
-                                plat.changeY(doodleDy);
-                            }
-                            i += 1;
-                        });
-    }
-
-
-};
-
-template<size_t count>
-class MovablePlatforms : public Platforms<MovablePlatform, count> {
-public:
-    void changePlatformsAmount(float height, float doodleDy, uint32_t score) {
-        std::for_each_n(this->platforms.begin(), this->actualPlatformAmount,
-                        [&, i = 0](auto &plat) mutable {
-                            if (plat.getY() > height) {
-                                if (this->actualPlatformAmount >= 7
-                                    and i == this->actualPlatformAmount - 1
-                                    and score > 800 * (this->platforms.size() - this->actualPlatformAmount + 1)
-                                        ) {
-                                    std::cout << "less pl\n";
-                                    this->actualPlatformAmount -= 1;
-                                } else {
-                                    plat.setY(0);
-                                    plat.setX(distribution_x(this->mt));
-                                }
-                            } else {
-                                plat.changeY(doodleDy);
-                            }
-                            i += 1;
-                        });
-    }
-
-
-protected:
-    float speedDx{0};
 };
 
 #endif //SFML_DOODLE_JUMP_PLATFORMS_HPP

@@ -4,6 +4,8 @@
 #include "../headers/Doodle.hpp"
 #include "../headers/Obstacle.hpp"
 #include "../headers/Platforms.hpp"
+#include "../headers/StaticPlatforms.hpp"
+#include "../headers/MovablePlatforms.hpp"
 
 #include <SFML/Graphics.hpp>
 #include <iostream>
@@ -106,7 +108,7 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
     std::uniform_real_distribution<float> distribution_y(0, height);
     std::uniform_real_distribution<float> small_distribution_y(0, height / 10);
 
-    Platforms<StaticPlatform, 10> platforms1{"../img/platform.png", distribution_x, distribution_y, mt};
+    StaticPlatforms<10> platforms1{"../img/platform.png", distribution_x, distribution_y, mt};
 
     for (auto &plat: platforms) {
         plat.setX(distribution_x(mt));
@@ -141,7 +143,7 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
             doodle.changeX(5);
 
             if (doodle.getX() > width) {
-                doodle.setX(negative(doodle.getPosition().x));
+                doodle.setX(negative(doodle.getSize().x));
             }
         }
 
@@ -166,28 +168,7 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
             doodle.setY(h);
 
             platforms1.changePlatformPosition(height, doodle.getDy());
-            platforms1.changePlatformsAmount(height, doodle.getDy(), score);
-
-#pragma region
-            std::for_each_n(platforms.begin(), platforms.size() - less_platforms,
-                            [&, i = 0](auto &plat) mutable {
-                                if (plat.getY() > height) {
-                                    if (less_platforms < 7
-                                        and i == platforms.size() - less_platforms - 1
-                                        and score > 800 * (less_platforms + 1)
-                                            ) {
-                                        std::cout << "less pl\n";
-                                        less_platforms += 1;
-                                    } else {
-                                        plat.setY(0);
-                                        plat.setX(distribution_x(mt));
-                                    }
-                                } else {
-                                    plat.changeY(-doodle.getDy());
-                                }
-                                i += 1;
-                            });
-#pragma endregion
+            platforms1.changePlatformsAmount(height, score);
 
             if (score > 1000) {
                 for (auto &m_plat: movable_platforms) {
@@ -214,24 +195,14 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
             }
         }
 
-        std::for_each_n(platforms.begin(), platforms.size() - less_platforms, [&](const auto &plat) {
-            if (platform_collision_detection(doodle, plat)) {
-                if (doodle.getDy() > 0) {
-                    doodle.setDy(-10);
-                }
-            }
-        });
-
+        platforms1.checkDoodleCollision(doodle);
         window.draw(spriteBackground);
-
-        doodle.applyCurrentPosition();
         window.draw(doodle.getSprite());
 
-        std::for_each_n(platforms.begin(), platforms.size() - less_platforms, [&](auto &plat) {
-            spritePlatform.setPosition(plat.getX(), plat.getY());
-            window.draw(spritePlatform);
-        });
+        platforms1.drawPlatforms(window);
 
+
+#pragma region
         if (score > 1000) {
             for (const auto &m_plat: movable_platforms) {
                 if (platform_collision_detection(doodle, m_plat)) {
@@ -280,6 +251,7 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
                 window.draw(monster.getSprite());
             }
         }
+#pragma endregion
 
         sf::Text textScore{};
 

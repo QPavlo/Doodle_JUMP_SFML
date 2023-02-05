@@ -42,17 +42,6 @@ enum MonsterCollision : uint32_t {
     return MonsterCollision::NO_COLLISION;
 }
 
-[[nodiscard]] bool platform_collision_detection(const Doodle &doodle,
-                                                const StaticPlatform &platform) {
-    if ((doodle.getX() + (doodle.getSize().x / 1.5f) > platform.getX()) and
-        (doodle.getX() + (doodle.getSize().x / 3.0f) < platform.getX() + StaticPlatform::getSize().x) and
-        (doodle.getY() + doodle.getSize().y > platform.getY()) and
-        (doodle.getY() + doodle.getSize().y < platform.getY() + StaticPlatform::getSize().y)) {
-        return true;
-    }
-    return false;
-}
-
 void play_game(sf::RenderWindow &window, const sf::Font &font);
 
 void lose_game_window(sf::RenderWindow &window) {
@@ -93,8 +82,6 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
             spriteM_Platform{movable_platform},
             spriteBackground{background};
 
-
-    std::array<StaticPlatform, 10> platforms{};
     std::array<MovablePlatform, 5> movable_platforms{};
 
     Doodle doodle{"../img/doodle.png"};
@@ -108,27 +95,14 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
     std::uniform_real_distribution<float> distribution_y(0, height);
     std::uniform_real_distribution<float> small_distribution_y(0, height / 10);
 
-    StaticPlatforms<10> platforms1{"../img/platform.png", distribution_x, distribution_y, mt};
-
-    for (auto &plat: platforms) {
-        plat.setX(distribution_x(mt));
-        plat.setY(distribution_y(mt));
-    }
-
-    for (auto &m_plat: movable_platforms) {
-        m_plat.setCoordinates(distribution_x(mt), negative(distribution_y(mt)));
-    }
+    StaticPlatforms<10> staticPlatforms{"../img/platform.png", distribution_x, distribution_y, mt};
+    MovablePlatforms<5> movablePlatforms{"../img/movable_platform.png", distribution_x, distribution_y, mt, 3.0f};
 
     monster.setPosition({distribution_x(mt), negative(distribution_y(mt))});
 
     float h = 250;
-    float dx = 3.0f;
     bool monster_flag = false;
-    int32_t less_platforms = 0;
 
-    for (auto &m_plat: movable_platforms) {
-        m_plat.setSpeed(dx);
-    }
 
     while (window.isOpen()) {
         sf::Event event{};
@@ -167,18 +141,12 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
             score += static_cast<uint32_t>(doodle.getY() / 100);
             doodle.setY(h);
 
-            platforms1.changePlatformPosition(height, doodle.getDy());
-            platforms1.changePlatformsAmount(height, score);
+            staticPlatforms.changePlatformPosition(height, doodle.getDy());
+            staticPlatforms.changePlatformsAmount(height, score);
 
-            if (score > 1000) {
-                for (auto &m_plat: movable_platforms) {
-                    if (m_plat.getY() > height) {
-                        m_plat.setY(negative(small_distribution_y(mt)));
-                        m_plat.setX(distribution_x(mt));
-                    } else {
-                        m_plat.changeY(-doodle.getDy());
-                    }
-                }
+            if (score > 100) {
+                movablePlatforms.changePlatformPosition(height, doodle.getDy());
+                movablePlatforms.changePlatformsAmount(height, score);
 
                 if (monster_flag) {
                     if (monster.getY() > height) {
@@ -195,38 +163,23 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
             }
         }
 
-        platforms1.checkDoodleCollision(doodle);
+        staticPlatforms.checkDoodleCollision(doodle);
         window.draw(spriteBackground);
         window.draw(doodle.getSprite());
+        staticPlatforms.drawPlatforms(window);
 
-        platforms1.drawPlatforms(window);
 
+        if (score > 100) {
 
-#pragma region
-        if (score > 1000) {
-            for (const auto &m_plat: movable_platforms) {
-                if (platform_collision_detection(doodle, m_plat)) {
-                    if (doodle.getDy() > 0) {
-                        doodle.setDy(-10);
-                    }
-                }
-            }
+            movablePlatforms.checkDoodleCollision(doodle);
 
             if (score % 100 == 0) {
-                dx += 0.02;
+                movablePlatforms.changeDx(0.2);
             }
 
-            for (auto &m_plat: movable_platforms) {
-                m_plat.changeX(m_plat.getSpeed());
-                if (m_plat.getX() > width - MovablePlatform::getSize().x) {
-                    m_plat.setSpeed(-dx);
-                } else if (m_plat.getX() < 0) {
-                    m_plat.setSpeed(dx);
-                }
+            movablePlatforms.changePlatformsPositionX(width);
 
-                spriteM_Platform.setPosition(m_plat.getX(), m_plat.getY());
-                window.draw(spriteM_Platform);
-            }
+            movablePlatforms.drawPlatforms(window);
 
             float temp_rand = distribution_x(mt);
 
@@ -235,7 +188,6 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
             }
 
             if (monster_flag) {
-//                monster.setPosition(spriteMonster.getPosition());
                 auto monster_coll_det = monster_collision_detection(doodle,
                                                                     monster);
 
@@ -245,13 +197,10 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
                     doodle.setDy(-10);
                     monster.setPosition({1000, 1000});
                 }
-//                spriteMonster.setPosition(monster.getPosition());
-
                 monster.getSprite().setPosition(monster.getPosition());
                 window.draw(monster.getSprite());
             }
         }
-#pragma endregion
 
         sf::Text textScore{};
 

@@ -16,12 +16,18 @@ public:
                                              distribution_x,
                                              distribution_y,
                                              mt) {
+        this->actualPlatformAmount = count;
+
+        for (auto &plat: this->platforms) {
+            plat.setX(distribution_x(mt));
+            plat.setY(distribution_y(mt));
+        }
 
     }
 
     void changePlatformsAmount(float windowHeight, uint32_t score) override {
         std::for_each_n(this->platforms.begin(), this->actualPlatformAmount,
-                        [&](auto &plat) mutable {
+                        [&](auto &plat) {
                             if (plat.getY() > windowHeight) {
                                 if (this->actualPlatformAmount >= 5 and
                                     &(plat) == &(this->platforms[this->actualPlatformAmount - 1]) and

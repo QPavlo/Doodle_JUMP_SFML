@@ -42,7 +42,17 @@ void StaticPlatform::setY(float y) {
     this->platformPosition.y = y;
 }
 
-[[maybe_unused]] void StaticPlatform::setSize(sf::Vector2f size) {
+[[nodiscard]] bool StaticPlatform::collisionDetected(const Doodle &doodle) const {
+    if ((doodle.getX() + (doodle.getSize().x / 1.5f) > platformPosition.x) and
+        (doodle.getX() + (doodle.getSize().x / 3.0f) < platformPosition.x + StaticPlatform::platformSize.x) and
+        (doodle.getY() + doodle.getSize().y > platformPosition.y) and
+        (doodle.getY() + doodle.getSize().y < platformPosition.y + StaticPlatform::platformSize.y)) {
+        return true;
+    }
+    return false;
+}
+
+void StaticPlatform::setSize(sf::Vector2f size) {
     StaticPlatform::platformSize = size;
 }
 

@@ -20,10 +20,6 @@ public:
         this->platformTexture.loadFromFile(textureFilename.data());
         this->platformSprite.setTexture(platformTexture);
 
-        for (auto &plat: platforms) {
-            plat.setX(distribution_x(mt));
-            plat.setY(this->distribution_y(mt));
-        }
     }
 
     void changePlatformPosition(float height, float doodleDy) {
@@ -43,7 +39,7 @@ public:
 
     void checkDoodleCollision(Doodle &doodle) {
         std::for_each_n(platforms.begin(), actualPlatformAmount, [&](const auto &plat) {
-            if (platform_collision_detection(doodle, plat)) {
+            if (plat.collisionDetected(doodle)) {
                 if (doodle.getDy() > 0) {
                     doodle.setDy(-10);
                 }
@@ -58,11 +54,11 @@ public:
         });
     }
 
-    [[nodiscard]] constexpr std::array<T, count> &getPlatform() const {
+    [[nodiscard]] constexpr std::array<T, count> &getPlatforms() const {
         return platforms;
     }
 
-    [[nodiscard]] std::array<T, count> &getPlatform() {
+    [[nodiscard]] std::array<T, count> &getPlatforms() {
         return platforms;
     }
 
@@ -70,7 +66,7 @@ protected:
     sf::Texture platformTexture;
     sf::Sprite platformSprite;
     std::array<T, count> platforms{};
-    int32_t actualPlatformAmount{count};
+    int32_t actualPlatformAmount{0};
     std::uniform_real_distribution<float> &distribution_x;
     std::uniform_real_distribution<float> &distribution_y;
     std::mt19937 &mt;

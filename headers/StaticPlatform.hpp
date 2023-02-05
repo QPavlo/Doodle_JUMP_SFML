@@ -1,9 +1,10 @@
 #ifndef SFML_TEST_STATIC_PLATFORM_H
 #define SFML_TEST_STATIC_PLATFORM_H
 
+#include "Doodle.hpp"
 #include <SFML/Graphics.hpp>
 
-class StaticPlatform  {
+class StaticPlatform {
 public:
     StaticPlatform();
 
@@ -27,7 +28,9 @@ public:
 
     void setY(float y);
 
-    [[maybe_unused]] static void setSize(sf::Vector2f size);
+    [[nodiscard]] bool collisionDetected(const Doodle &doodle) const;
+
+    static void setSize(sf::Vector2f size);
 
 protected:
     sf::Vector2f platformPosition{};

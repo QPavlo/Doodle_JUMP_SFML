@@ -4,6 +4,15 @@ project(sfml_doodle_jump)
 set(CMAKE_CXX_STANDARD 20)
 
 find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
-add_executable(sfml_doodle_jump src/Application.cpp headers/Menu.hpp src/Menu.cpp headers/Doodle.hpp headers/Obstacle.hpp headers/MovablePlatform.hpp headers/StaticPlatform.hpp src/Doodle.cpp headers/Platforms.hpp src/StaticPlatform.cpp headers/StaticPlatforms.hpp headers/MovablePlatforms.hpp)
+add_executable(sfml_doodle_jump
+        src/Application.cpp src/Menu.cpp
+        src/Doodle.cpp
+        src/StaticPlatform.cpp
+        src/MovablePlatform.cpp
+        headers/StaticPlatforms.hpp
+        headers/Platforms.hpp
+        headers/MovablePlatforms.hpp
+        src/Platforms.cpp
+        src/MovablePlatforms.cpp src/StaticPlatforms.cpp src/Obstacle.cpp)
 
 target_link_libraries(sfml_doodle_jump sfml-graphics sfml-audio -lglut -lGLU -lGL)

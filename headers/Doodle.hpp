@@ -43,6 +43,8 @@ public:
 
     [[nodiscard]] float getSpeed() const;
 
+    void drawDoodle(sf::RenderWindow &window);
+
 private:
     sf::Texture doodleTexture{};
     sf::Sprite doodleSprite{};

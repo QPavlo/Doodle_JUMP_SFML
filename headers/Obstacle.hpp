@@ -2,54 +2,55 @@
 #define SFML_TEST_OBSTACLE_HPP
 
 #include <SFML/Graphics.hpp>
+#include <random>
+#include "Doodle.hpp"
+
+void lose_game_window(sf::RenderWindow &window);
 
 class Obstacle {
 public:
-    explicit Obstacle(std::string_view textureFilename) {
-        obstacleTexture.loadFromFile(textureFilename.data());
-        obstacleSprite.setTexture(obstacleTexture);
-    }
+    enum ObstacleCollisionType : uint32_t {
+        NO_COLLISION = 0,
+        COLLISION_FROM_BOTTOM = 1,
+        COLLISION_FROM_TOP = 2
+    };
 
-    void setPosition(sf::Vector2f newPosition) {
-        this->obstaclePosition = newPosition;
-    }
+    Obstacle(std::string_view textureFilename, float randomStartX, std::mt19937 &mt);
 
-    void setX(float x) {
-        this->obstaclePosition.x = x;
-    }
+    void setPosition(sf::Vector2f newPosition);
 
-    void setY(float y) {
-        this->obstaclePosition.y = y;
-    }
+    void setX(float x);
 
-    [[nodiscard]] sf::Vector2f getPosition() const {
-        return obstaclePosition;
-    }
+    void setY(float y);
 
-    [[nodiscard]] float getX() const {
-        return obstaclePosition.x;
-    }
+    [[nodiscard]] sf::Vector2f getPosition() const;
 
-    [[nodiscard]] float getY() const {
-        return obstaclePosition.y;
-    }
+    [[nodiscard]] float getX() const;
 
-    [[nodiscard]] sf::Vector2f getSize() const {
-        return static_cast<sf::Vector2f>(obstacleTexture.getSize());
-    }
+    [[nodiscard]] float getY() const;
 
-    [[nodiscard]] const sf::Sprite &getSprite() const {
-        return obstacleSprite;
-    }
+    [[nodiscard]] sf::Vector2f getSize() const;
 
-    [[nodiscard]] sf::Sprite &getSprite() {
-        return obstacleSprite;
-    }
+    [[nodiscard]] const sf::Sprite &getSprite() const;
+
+    [[nodiscard]] sf::Sprite &getSprite();
+
+    void spawnObstacle();
+
+    void drawObstacle(sf::RenderWindow &window);
+
+    [[nodiscard]]ObstacleCollisionType collisionDetected(const Doodle &doodle) const;
+
+    void changeObstaclePosition(float height, float doodleDy, float newRandomX);
+
+    void checkDoodleCollision(Doodle &doodle, sf::RenderWindow &window);
 
 private:
+    bool obstacleVisibility{false};
+    std::uniform_int_distribution<uint16_t> chanceToAppear{0, UINT16_MAX};
+    std::mt19937 &mt;
     sf::Texture obstacleTexture{};
     sf::Sprite obstacleSprite{};
-    sf::Vector2f obstaclePosition{};
 };
 
 

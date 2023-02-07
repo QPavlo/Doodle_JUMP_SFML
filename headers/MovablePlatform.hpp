@@ -7,15 +7,11 @@
 class MovablePlatform : public StaticPlatform {
 
 public:
-    MovablePlatform() = default;
+    MovablePlatform();
 
-    [[nodiscard]] float getSpeed() const {
-        return movablePlatformSpeed;
-    }
+    [[nodiscard]] float getSpeed() const;
 
-    void setSpeed(float speed) {
-        this->movablePlatformSpeed = speed;
-    }
+    void setSpeed(float speed);
 
 private:
     float movablePlatformSpeed{0};

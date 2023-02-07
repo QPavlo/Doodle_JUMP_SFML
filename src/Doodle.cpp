@@ -77,3 +77,7 @@ void Doodle::changeDy(float d_accelerationY) {
 [[nodiscard]] const sf::Sprite &Doodle::getSprite() const {
     return doodleSprite;
 }
+
+void Doodle::drawDoodle(sf::RenderWindow &window) {
+        window.draw(doodleSprite);
+}

@@ -15,7 +15,11 @@ public:
 
     explicit Platforms(std::string_view textureFilename);
 
-    void changePlatformPosition(float height, float doodleDy, float newRandomX);
+    void changePlatformPosition(float height,
+                                float doodleDy,
+                                std::uniform_real_distribution<float> randomX_Generator,
+                                std::uniform_real_distribution<float> randomSmallY_Generator,
+                                std::mt19937 &mt);
 
     virtual void changePlatformsAmount(float height, uint32_t score) = 0;
 

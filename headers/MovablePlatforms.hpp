@@ -27,8 +27,5 @@ public:
 protected:
     float speedDx{0};
 };
-//
-//#include "../src/MovablePlatforms.cpp"
-//#include "../src/Platforms.cpp"
 
 #endif

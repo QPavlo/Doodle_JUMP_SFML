@@ -1,6 +1,7 @@
+#include <iostream>
 #include "../headers/Obstacle.hpp"
 
-Obstacle::Obstacle(std::string_view textureFilename, float randomStartX,std::mt19937 &mt)
+Obstacle::Obstacle(std::string_view textureFilename, float randomStartX, std::mt19937 &mt)
         : mt{mt} {
     obstacleTexture.loadFromFile(textureFilename.data());
     obstacleSprite.setTexture(obstacleTexture);
@@ -43,15 +44,18 @@ void Obstacle::setY(float y) {
     return obstacleSprite;
 }
 
-void Obstacle::spawnObstacle() {
+void Obstacle::spawnObstacle(float randNewX, float randNewY) {
     uint16_t temp_rand = chanceToAppear(mt);
-    if (temp_rand == 999 and !obstacleVisibility) {
+    if (temp_rand <= 999 and !obstacleVisibility) {
+        setPosition({randNewX, -(getSize().y) - randNewY});
         obstacleVisibility = true;
     }
 }
 
 void Obstacle::drawObstacle(sf::RenderWindow &window) {
-    window.draw(obstacleSprite);
+    if (obstacleVisibility) {
+        window.draw(obstacleSprite);
+    }
 }
 
 [[nodiscard]]Obstacle::ObstacleCollisionType Obstacle::collisionDetected(const Doodle &doodle) const {
@@ -69,6 +73,12 @@ void Obstacle::drawObstacle(sf::RenderWindow &window) {
         return ObstacleCollisionType::COLLISION_FROM_BOTTOM;
     }
     return ObstacleCollisionType::NO_COLLISION;
+}
+
+void Obstacle::collisionDetected(const sf::Sprite &bullet) {
+    if (bullet.getGlobalBounds().intersects(this->obstacleSprite.getGlobalBounds())) {
+        this->obstacleVisibility = false;
+    }
 }
 
 void Obstacle::changeObstaclePosition(float height, float doodleDy, float newRandomX) {
@@ -93,7 +103,7 @@ void Obstacle::checkDoodleCollision(Doodle &doodle, sf::RenderWindow &window) {
             lose_game_window(window);
         } else if (collisionStatus == ObstacleCollisionType::COLLISION_FROM_TOP) {
             doodle.setDy(-10);
-            this->setPosition({1000, 1000});
+            obstacleVisibility = false;
         }
     }
 }

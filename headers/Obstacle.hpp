@@ -35,7 +35,7 @@ public:
 
     [[nodiscard]] sf::Sprite &getSprite();
 
-    void spawnObstacle();
+    void spawnObstacle(float randNewX, float randNewY);
 
     void drawObstacle(sf::RenderWindow &window);
 
@@ -43,10 +43,13 @@ public:
 
     void changeObstaclePosition(float height, float doodleDy, float newRandomX);
 
+    void collisionDetected(const sf::Sprite &bullet);
+
     void checkDoodleCollision(Doodle &doodle, sf::RenderWindow &window);
 
 private:
     bool obstacleVisibility{false};
+    uint8_t hp{3};
     std::uniform_int_distribution<uint16_t> chanceToAppear{0, UINT16_MAX};
     std::mt19937 &mt;
     sf::Texture obstacleTexture{};

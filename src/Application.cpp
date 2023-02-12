@@ -50,17 +50,25 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
 
     sf::Sprite spriteBackground{background};
 
+    sf::Texture bullet;
+    bullet.loadFromFile("../img/bullet.png");
+
+    sf::Sprite bulletSprite{bullet};
+    bulletSprite.setScale(3, 3);
+    bool bulletFlag = false;
+
     std::random_device rd;
     std::mt19937 mt(rd());
 
-    std::uniform_real_distribution<float> distribution_x(0, width - 60);
-    std::uniform_real_distribution<float> distribution_y(0, height);
+    std::uniform_real_distribution<float> randomX_Generator(0, width - 60);
+    std::uniform_real_distribution<float> randomY_Generator(0, height);
+    std::uniform_real_distribution<float> randomSmallY_Generator(-30, 0);
 
     Doodle doodle{"../img/doodle.png"};
-    Obstacle monster{"../img/monster.png", distribution_x(mt), mt};
+    Obstacle monster{"../img/monster.png", randomX_Generator(mt), mt};
 
-    StaticPlatforms<10> staticPlatforms{"../img/platform.png", distribution_x, distribution_y, mt};
-    MovablePlatforms<5> movablePlatforms{"../img/movable_platform.png", distribution_x, distribution_y, mt, 3.0f};
+    StaticPlatforms<10> staticPlatforms{"../img/platform.png", randomX_Generator, randomY_Generator, mt};
+    MovablePlatforms<5> movablePlatforms{"../img/movable_platform.png", randomX_Generator, randomY_Generator, mt, 3.0f};
 
     float h = 250;
 
@@ -89,6 +97,12 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
             }
         }
 
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) and !bulletFlag) {
+            bulletSprite.setPosition(doodle.getPosition().x + (doodle.getSize() * 0.73f).x,
+                                     doodle.getPosition().y);
+            bulletFlag = true;
+        }
+
         doodle.changeDy(0.25f);
         doodle.changeY(doodle.getDy());
 
@@ -100,17 +114,34 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
             score += static_cast<uint32_t>(doodle.getY() / 100);
             doodle.setY(h);
 
-            staticPlatforms.changePlatformPosition(height, doodle.getDy(), distribution_x(mt));
+            staticPlatforms.changePlatformPosition(height, doodle.getDy(), randomX_Generator,
+                                                   randomSmallY_Generator, mt);
             staticPlatforms.changePlatformsAmount(height, score);
 
             if (score > 100) {
-                movablePlatforms.changePlatformPosition(height, doodle.getDy(), distribution_x(mt));
+                movablePlatforms.changePlatformPosition(height,
+                                                        doodle.getDy(),
+                                                        randomX_Generator,
+                                                        randomSmallY_Generator, mt);
                 movablePlatforms.changePlatformsAmount(height, score);
 
-                monster.changeObstaclePosition(height, doodle.getDy(), distribution_x(mt));
+                monster.changeObstaclePosition(height, doodle.getDy(), randomX_Generator(mt));
             }
         }
         doodle.drawDoodle(window);
+
+        bulletSprite.setPosition(bulletSprite.getPosition().x,
+                                 bulletSprite.getPosition().y - 25
+        );
+
+        if (bulletSprite.getPosition().y < 0) {
+            bulletFlag = false;
+        }
+
+        if (bulletFlag) {
+            monster.collisionDetected(bulletSprite);
+            window.draw(bulletSprite);
+        }
 
         staticPlatforms.checkDoodleCollision(doodle);
         staticPlatforms.drawPlatforms(window);
@@ -125,7 +156,7 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
             movablePlatforms.changePlatformsPositionX(width);
             movablePlatforms.drawPlatforms(window);
 
-            monster.spawnObstacle();
+            monster.spawnObstacle(randomX_Generator(mt), randomY_Generator(mt));
             monster.checkDoodleCollision(doodle, window);
             monster.drawObstacle(window);
         }
@@ -142,7 +173,7 @@ void play_game(sf::RenderWindow &window, const sf::Font &font) {
 }
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(400, 533), "Obstacle Jump!");
+    sf::RenderWindow window(sf::VideoMode(400, 533), "Doodle Jump!");
     window.setFramerateLimit(60);
 
     Menu menu(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));

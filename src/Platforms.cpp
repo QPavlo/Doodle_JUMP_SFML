@@ -8,12 +8,15 @@ Platforms<T, count>::Platforms(std::string_view textureFilename) {
 }
 
 template<typename T, size_t count>
-void Platforms<T, count>::changePlatformPosition(float height, float doodleDy, float newRandomX) {
+void Platforms<T, count>::changePlatformPosition(float height, float doodleDy,
+                                                 std::uniform_real_distribution<float> randomX_Generator,
+                                                 std::uniform_real_distribution<float> randomSmallY_Generator,
+                                                 std::mt19937 &mt) {
     std::for_each_n(platforms.begin(), actualPlatformAmount,
                     [&](auto &plat) mutable {
                         if (plat.getY() > height) {
-                            plat.setY(0);
-                            plat.setX(newRandomX);
+                            plat.setY(randomSmallY_Generator(mt));
+                            plat.setX(randomX_Generator(mt));
                         } else {
                             plat.changeY(-doodleDy);
                         }
